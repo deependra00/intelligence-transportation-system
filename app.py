@@ -23,7 +23,7 @@ if uploaded_file is not None:
     tfile.write(uploaded_file.read())
     cap = cv2.VideoCapture(tfile.name)
     
-   stframe = st.empty()
+    stframe = st.empty()
     frame_count = 0
     
     while cap.isOpened():
@@ -32,7 +32,7 @@ if uploaded_file is not None:
             break
         
         frame_count += 1
-        if frame_count % 3 != 0:  # Sirf har 3rd frame process karega taaki speed fast rahe
+        if frame_count % 3 != 0:
             continue
         
         frame = cv2.resize(frame, (480, 270))
