@@ -21,12 +21,18 @@ if st.button("Start Live Detection Stream"):
     cap = cv2.VideoCapture(video_file)
     frame_placeholder = st.empty()
     
+    # 1. Yeh columns loop se BAHAR hone chahiye
     col1, col2, col3 = st.columns(3)
-    kpi1 = col1.empty()
-    kpi2 = col2.empty()
-    kpi3 = col3.empty()
+    
+    # 2. Har column ke andar ek container placeholder bana lein
+    with col1:
+        metric1_placeholder = st.empty()
+    with col2:
+        metric2_placeholder = st.empty()
+    with col3:
+        metric3_placeholder = st.empty()
 
-    VEHICLE_CLASSES = [2, 3, 5, 7] # Car, motorcycle, bus, truck
+    VEHICLE_CLASSES = [2, 3, 5, 7]
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -61,30 +67,27 @@ if st.button("Start Live Detection Stream"):
         risk_pred = risk_model.predict(np.array([[vehicle_count, 65, 1]]))[0]
         risk_labels = {0: "LOW RISK", 1: "MODERATE RISK", 2: "HIGH RISK"}
 
-        # Modern Card Styling for Metrics
-        with col1:
-            st.markdown(f"""
-                <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #1f77b4; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
-                    <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">🚗 Vehicle Count</p>
-                    <h2 style="color: #1f77b4; margin: 5px 0 0 0;">{vehicle_count}</h2>
-                </div>
-            """, unsafe_allow_html=True)
+        # 3. Ab placeholders ke andar .markdown() call karein taaki purane cards overwrite (replace) ho jayein
+        metric1_placeholder.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #1f77b4; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">🚗 Vehicle Count</p>
+                <h2 style="color: #1f77b4; margin: 5px 0 0 0;">{vehicle_count}</h2>
+            </div>
+        """, unsafe_allow_html=True)
 
-        with col2:
-            st.markdown(f"""
-                <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #ffa500; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
-                    <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">📊 Traffic Density</p>
-                    <h3 style="color: {d_color}; margin: 5px 0 0 0;">{density}</h3>
-                </div>
-            """, unsafe_allow_html=True)
+        metric2_placeholder.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #ffa500; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">📊 Traffic Density</p>
+                <h3 style="color: {d_color}; margin: 5px 0 0 0;">{density}</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
-        with col3:
-            st.markdown(f"""
-                <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #ff4b4b; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
-                    <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">⚠️ Accident Risk</p>
-                    <h3 style="color: #ff4b4b; margin: 5px 0 0 0;">{risk_labels.get(risk_pred, "UNKNOWN")}</h3>
-                </div>
-            """, unsafe_allow_html=True)
+        metric3_placeholder.markdown(f"""
+            <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; text-align: center; border-left: 5px solid #ff4b4b; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);">
+                <p style="color: #31333F; font-size: 14px; margin: 0; font-weight: bold;">⚠️ Accident Risk</p>
+                <h3 style="color: #ff4b4b; margin: 5px 0 0 0;">{risk_labels.get(risk_pred, "UNKNOWN")}</h3>
+            </div>
+        """, unsafe_allow_html=True)
 
         # Render frame on Streamlit
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
