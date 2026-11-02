@@ -49,6 +49,7 @@ Bash
 streamlit run app.py
 🌐 Live Demo
 You can access the live web application hosted on Streamlit Cloud:
+https://intelligence-transportation-system-iiot.streamlit.app
 
 
 
