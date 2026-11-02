@@ -80,6 +80,6 @@ if run_stream:
 
         # Convert OpenCV BGR frame to RGB for Streamlit display
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        frame_placeholder.image(rgb_frame, channels="RGB", use_container_width=True)
+        frame_placeholder.image(rgb_frame, channels="RGB")
 
     cap.release()
