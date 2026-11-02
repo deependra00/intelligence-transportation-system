@@ -23,21 +23,26 @@ if uploaded_file is not None:
     tfile.write(uploaded_file.read())
     cap = cv2.VideoCapture(tfile.name)
     
-    stframe = st.empty()
+   stframe = st.empty()
+    frame_count = 0
     
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
         
-        frame = cv2.resize(frame, (640, 360))
-        results = detection_model(frame, stream=True)
+        frame_count += 1
+        if frame_count % 3 != 0:  # Sirf har 3rd frame process karega taaki speed fast rahe
+            continue
+        
+        frame = cv2.resize(frame, (480, 270))
+        results = detection_model(frame, stream=True, imgsz=320, conf=0.4)
         vehicle_count = 0
 
         for r in results:
             for box in r.boxes:
                 if int(box.cls[0]) in VEHICLE_CLASSES:
-                    vehicle_count += 5  # Example logic
+                    vehicle_count += 1
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
