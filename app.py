@@ -32,7 +32,7 @@ if uploaded_file is not None:
             break
         
         frame_count += 1
-        if frame_count % 3 != 0:
+        if frame_count % 6 != 0:
             continue
         
         frame = cv2.resize(frame, (480, 270))
