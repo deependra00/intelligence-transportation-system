@@ -4,51 +4,82 @@ import joblib
 import numpy as np
 from ultralytics import YOLO
 
+st.set_page_config(page_title="ITS Dashboard", layout="wide")
+
 st.title("🚗 Intelligent Transportation System (ITS) - IIoT Dashboard")
 
 @st.cache_resource
 def load_models():
-    det_model = YOLO('yolov8n.pt')
-    r_model = joblib.load('models/risk_predictor.pkl')
-    return det_model, r_model
+    detection_model = YOLO('yolov8n.pt')
+    risk_model = joblib.load('models/risk_predictor.pkl')
+    return detection_model, risk_model
 
 detection_model, risk_model = load_models()
+
 VEHICLE_CLASSES = [2, 3, 5, 7]
 
-# Direct
-video_path = "traffic_sample.mp4"
-cap = cv2.VideoCapture(video_path)
+video_file = 'dataset/traffic_sample.mp4'
 
-stframe = st.empty()
-frame_count = 0
+# Streamlit Layout
+st.sidebar.header("Controls")
+run_stream = st.sidebar.button("Start Video Stream")
 
-while cap.isOpened():
+frame_placeholder = st.empty()
+kpi_placeholder = st.empty()
+
+if run_stream:
+    cap = cv2.VideoCapture(video_file)
+    
+    while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
+            st.warning("Video stream ended or failed to grab frame.")
             break
-        
-        frame_count += 1
-        if frame_count % 10 != 0:  
-            continue
-        
-        frame = cv2.resize(frame, (320, 180)) # Resolution aur chota kiya
-        results = detection_model(frame, stream=True, imgsz=160, conf=0.4)
-        vehicle_count = 0
 
+        frame = cv2.resize(frame, (960, 540))
+
+        # YOLO Vehicle Detection
+        results = detection_model(frame, stream=True)
+        
+        vehicle_count = 0
         for r in results:
-            for box in r.boxes:
-                if int(box.cls[0]) in VEHICLE_CLASSES:
+            boxes = r.boxes
+            for box in boxes:
+                cls = int(box.cls[0])
+                if cls in VEHICLE_CLASSES:
                     vehicle_count += 1
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-        density = "LOW" if vehicle_count < 10 else ("MEDIUM" if vehicle_count <= 25 else "HIGH")
-        risk_pred = risk_model.predict(np.array([[vehicle_count, 65, 1]]))[0]
-        risk_text = ["LOW RISK", "MODERATE RISK", "HIGH RISK"][risk_pred]
+        # Traffic Density Classification
+        if vehicle_count < 10:
+            density = "LOW DENSITY"
+            density_color = "green"
+        elif vehicle_count < 25:
+            density = "MEDIUM DENSITY"
+            density_color = "orange"
+        else:
+            density = "HIGH DENSITY"
+            density_color = "red"
 
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        stframe.image(frame, channels="RGB", use_container_width=True)
-        
-        st.sidebar.markdown(f"**Vehicle Count:** {vehicle_count}")
-        st.sidebar.markdown(f"**Density:** {density}")
-        st.sidebar.markdown(f"**Accident Risk:** {risk_text}")
+        # Accident Risk Prediction
+        dummy_speed = 65
+        dummy_weather = 1  
+        risk_input = np.array([[vehicle_count, dummy_speed, dummy_weather]])
+        risk_pred = risk_model.predict(risk_input)[0]
+
+        risk_labels = {0: "LOW RISK", 1: "MODERATE RISK", 2: "HIGH RISK"}
+        risk_text = risk_labels.get(risk_pred, "UNKNOWN")
+
+        # Display Metrics on Sidebar/KPI section
+        with kpi_placeholder.container():
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Vehicle Count", vehicle_count)
+            col2.markdown(f"**Density:** :{density_color}[{density}]")
+            col3.metric("Accident Risk", risk_text)
+
+        # Convert OpenCV BGR frame to RGB for Streamlit display
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_placeholder.image(rgb_frame, channels="RGB", use_container_width=True)
+
+    cap.release()
