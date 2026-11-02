@@ -15,7 +15,7 @@ def load_models():
 detection_model, risk_model = load_models()
 VEHICLE_CLASSES = [2, 3, 5, 7]
 
-# Direct project folder ki video use hogi
+# Direct
 video_path = "traffic_sample.mp4"
 cap = cv2.VideoCapture(video_path)
 
@@ -23,32 +23,32 @@ stframe = st.empty()
 frame_count = 0
 
 while cap.isOpened():
-    ret, frame = cap.read()
-    if not ret:
-        break
-    
-    frame_count += 1
-    if frame_count % 5 != 0:  
-        continue
-    
-    frame = cv2.resize(frame, (480, 270))
-    results = detection_model(frame, stream=True, imgsz=320, conf=0.4)
-    vehicle_count = 0
+        ret, frame = cap.read()
+        if not ret:
+            break
+        
+        frame_count += 1
+        if frame_count % 10 != 0:  
+            continue
+        
+        frame = cv2.resize(frame, (320, 180)) # Resolution aur chota kiya
+        results = detection_model(frame, stream=True, imgsz=160, conf=0.4)
+        vehicle_count = 0
 
-    for r in results:
-        for box in r.boxes:
-            if int(box.cls[0]) in VEHICLE_CLASSES:
-                vehicle_count += 1
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        for r in results:
+            for box in r.boxes:
+                if int(box.cls[0]) in VEHICLE_CLASSES:
+                    vehicle_count += 1
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    density = "LOW" if vehicle_count < 10 else ("MEDIUM" if vehicle_count <= 25 else "HIGH")
-    risk_pred = risk_model.predict(np.array([[vehicle_count, 65, 1]]))[0]
-    risk_text = ["LOW RISK", "MODERATE RISK", "HIGH RISK"][risk_pred]
+        density = "LOW" if vehicle_count < 10 else ("MEDIUM" if vehicle_count <= 25 else "HIGH")
+        risk_pred = risk_model.predict(np.array([[vehicle_count, 65, 1]]))[0]
+        risk_text = ["LOW RISK", "MODERATE RISK", "HIGH RISK"][risk_pred]
 
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    stframe.image(frame, channels="RGB", use_container_width=True)
-    
-    st.sidebar.markdown(f"**Vehicle Count:** {vehicle_count}")
-    st.sidebar.markdown(f"**Density:** {density}")
-    st.sidebar.markdown(f"**Accident Risk:** {risk_text}")
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        stframe.image(frame, channels="RGB", use_container_width=True)
+        
+        st.sidebar.markdown(f"**Vehicle Count:** {vehicle_count}")
+        st.sidebar.markdown(f"**Density:** {density}")
+        st.sidebar.markdown(f"**Accident Risk:** {risk_text}")
