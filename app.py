@@ -21,8 +21,7 @@ VEHICLE_CLASSES = [2, 3, 5, 7]
 video_file = 'dataset/traffic_sample.mp4'
 
 # Streamlit Layout
-st.sidebar.header("Controls")
-run_stream = st.sidebar.button("Start Video Stream")
+st.video('dataset/traffic_sample.mp4')
 
 frame_placeholder = st.empty()
 kpi_placeholder = st.empty()
