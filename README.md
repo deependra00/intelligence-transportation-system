@@ -13,15 +13,21 @@ Version Control & Hosting: Git, GitHub, Render, Vercel
 
 Project Directory Structure
 Plaintext
-intelligence-transportation-system/
+intelligence-transportation-system
 │
+
 ├── models/
 │   └── risk_predictor.pkl      # Serialized Scikit-Learn risk classification model
 │
-├── .gitignore                  # Excludes large datasets and cache files
-├── app.py                      # Main Streamlit dashboard application
-├── requirements.txt            # Python dependencies
-├── README.md                   # Repository documentation
+
+├── .gitignore 
+# Excludes large datasets and cache files
+├── app.py  
+# Main Streamlit dashboard application
+├── requirements.txt 
+# Python dependencies
+├── README.md    
+# Repository documentation
 └── traffic_sample.mp4          # Sample traffic video clip for testing
 
 Key Features & Modules
@@ -49,7 +55,7 @@ Bash
 streamlit run app.py
 🌐 Live Demo
 You can access the live web application hosted on Streamlit Cloud:
-https://intelligence-transportation-system-iiot.streamlit.app
+Live Link: https://intelligence-transportation-system-iiot.streamlit.app
 
 
 
